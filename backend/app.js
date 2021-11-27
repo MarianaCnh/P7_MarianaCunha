@@ -6,10 +6,24 @@ const path = require('path');
 //contre les injections
 var helmet = require('helmet');
 
+//appel mysql avec sequelize
+const { Sequelize } = require('sequelize');
+
+const sequelize = new Sequelize("groupomania", "root", "Pepsie973*", {
+  dialect: "mysql",
+  host: "localhost"
+ });
+ 
+ try {
+   sequelize.authenticate();
+  console.log('Connection has been established successfully.');
+} catch (error) {
+  console.error('Unable to connect to the database:', error);
+};
 const rateLimit = require("express-rate-limit"); //rateLimit À utiliser pour limiter les demandes répétées à l'API pour la réinitialisation de mot de passe.
 
-const saucesRoutes = require('./routes/sauces');
-const userRoutes = require('./routes/user');
+const messageUser = require('./routes/message.routes');
+const userRoutes = require('./routes/user.routes');
 
 const app = express();
 
@@ -20,14 +34,6 @@ const limiteur = rateLimit({
 });
 
 app.use(limiteur);
-
-mongoose.connect(process.env.DB_CONNEXION,
-  { useNewUrlParser: true,
-    useUnifiedTopology: true })
-  .then(() => console.log('Connexion à MongoDB réussie !'))
-  .catch(() => console.log('Connexion à MongoDB échouée !'));
-
-// const bodyParser = require('body-parser');
 
 
 
@@ -42,11 +48,10 @@ app.use((req, res, next) => {
 app.use(express.json()); //Transforme le corp de la requête en object Javascript utilisable 
 app.use(helmet());
 
-
-
 app.use('/images', express.static(path.join(__dirname, 'images')));
 
-app.use('/api/sauces', saucesRoutes);
+
+// app.use('/api/sauces', saucesRoutes);
 app.use('/api/auth', userRoutes);
 
 
